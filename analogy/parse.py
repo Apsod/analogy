@@ -1,5 +1,5 @@
 
-def parse_txt(txt):
+def parse_txt(txt, normalize):
     ret = {}
     cat = None
     n = len(txt)
@@ -13,7 +13,7 @@ def parse_txt(txt):
         elif line[0] == '#':
             pass
         else:
-            [a, b, c, d] = line.split()
+            [a, b, c, d] = [normalize(w) for w in line.split()]
             ret[cat].append((a, b, c, d))
         ix = end + 1
         end = txt.find('\n', ix)

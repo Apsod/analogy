@@ -3,19 +3,20 @@ from abc import ABC, abstractmethod
 
 class Wrapper(ABC):
     @abstractmethod
-    def analogy(self, query):
+    def analogies(self, queries):
         """
-        analogy query answering method
-        :param query: Analogy query of the form A:B::X
+        Analogy query answering method. For efficiency this should handle batched queries of the form
+        [(A, B, X)]
+        :param queries: Analogy queries of the form A:B::X
         :return: Y that fits the query A is to B as X is to Y
         """
         pass
 
     @abstractmethod
-    def __contains__(self, item):
+    def members(self, items):
         """
-        item membership function.
-        :param item: item
+        Item membership function. For efficiency this should handle batched queries of the form [W]
+        :param items: items
         :return: if the item has a representation in the model
         """
         pass

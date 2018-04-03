@@ -7,11 +7,9 @@ setup(
     package_dir={'analogy': 'analogy'},
     packages=['analogy'],
 
-    requires=['analogy'],
-
     entry_points={
         'console_scripts': [
-            'eval-analogy = analogy.main:__main__'
+            'eval-analogy = analogy.__main__:__main__'
         ]
     }
 )
