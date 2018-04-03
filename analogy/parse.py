@@ -8,7 +8,7 @@ def parse_txt(txt, normalize):
     while ix < n:
         line = txt[ix:end].strip()
         if line[0] == ':':
-            cat = line[1:]
+            cat = line[1:].strip()
             ret[cat] = []
         elif line[0] == '#':
             pass
