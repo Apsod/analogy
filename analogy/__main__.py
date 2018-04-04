@@ -20,44 +20,53 @@ def read_wrapper(arg):
 
 
 def __main__():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description='Evaluate a language model against google analogy tasks')
 
     parser.add_argument(
         '--lower',
-        action='store_true'
+        action='store_true',
+        help='If present, test words are lowercased before being sent to the model',
     )
 
     parser.add_argument(
         '--test',
         type=read_test,
-        required=True)
+        required=True,
+        help='Path to analogy test set. Should take the form: ": category <newline> A B X Y <newline> ... "'
+        )
 
     parser.add_argument(
         '--wrapper',
         type=read_wrapper,
-        required=True)
+        required=True,
+        help='Python import path to the wrapper class, should implement the functions "load", "members", and "analogies"'
+        )
 
     parser.add_argument(
         '--model',
         type=str,
-        required=True)
+        required=True,
+        help='Model path'
+        )
 
     parser.add_argument(
         '--out',
         type=argparse.FileType('w'),
-        default=argparse.FileType('w')('-'))
+        default=argparse.FileType('w')('-'),
+        help='Output path, default: stdout'
+        )
 
     args = parser.parse_args()
 
-    def normalize(w):
-        r = w
-        if args.lower:
-            r = r.lower()
-        return r
+    if args.lower:
+        def normalize(w):
+            return w.lower()
+    else:
+        def normalize(w):
+            return w
 
     test = args.test(normalize)
     model = args.wrapper.load(args.model)
     result = evaluate_all(test, model, normalize)
     json.dump(result, args.out)
-
 
