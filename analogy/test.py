@@ -19,13 +19,15 @@ def evaluate(examples, model, normalize):
     mask = [all(model.members(example)) for example in examples]
 
     examples = [example for flag, example in zip(mask, examples) if flag]
-
-    (aa, bb, xx, yy) = zip(*examples)
-
-    abx = zip(aa, bb, xx)
+    
     ret[Result.NA.name] += sum([not m for m in mask])
-    for y, ans in zip(yy, model.analogies(abx)):
-        ret[Result(y == normalize(ans)).name] += 1
+
+    if examples:
+        (aa, bb, xx, yy) = zip(*examples)
+        abx = zip(aa, bb, xx)
+        for y, ans in zip(yy, model.analogies(abx)):
+            ret[Result(y == normalize(ans)).name] += 1
+
     return ret
 
 
