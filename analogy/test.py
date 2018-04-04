@@ -43,3 +43,35 @@ def evaluate_all(eval_set, model, normalize):
     for category, examples in eval_set.items():
         ret[category] = evaluate(examples, model, normalize)
     return ret
+
+def run(examples, model, normalize):
+    ret = []
+    mask = [all(model.members(example)) for example in examples]
+
+    valid_examples = [example for flag, example in zip(mask, examples) if flag]
+    
+    if valid_examples:
+        (aa, bb, xx, yy) = zip(*valid_examples)
+        abx = zip(aa, bb, xx)
+        ans = model.analogies(abx)
+    j = 0
+    for i in range(len(examples)):
+        if mask[i]:
+            prediction = ans[j]
+            j += 1
+        else: 
+            prediction = 'N/A'
+
+        ret.append({
+            'query': (examples[i][0], examples[i][1], examples[i][2]),
+            'correct': examples[i][3],
+            'prediction': prediction,
+        })
+    return ret
+
+def run_all(eval_set, model, normalize):
+    ret = {}
+    for category, examples in eval_set.items():
+        ret[category] = run(examples, model, normalize)
+    return ret
+

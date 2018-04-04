@@ -1,7 +1,7 @@
 import argparse
 import json
 from importlib import import_module
-from analogy.test import evaluate_all
+from analogy.test import evaluate_all, run_all
 from analogy.parse import parse_txt
 
 
@@ -26,6 +26,12 @@ def __main__():
         '--lower',
         action='store_true',
         help='If present, test words are lowercased before being sent to the model',
+    )
+
+    parser.add_argument(
+        '--run',
+        action='store_true',
+        help='If present, output all predictions and queries, not just aggregate results',
     )
 
     parser.add_argument(
@@ -67,6 +73,9 @@ def __main__():
 
     test = args.test(normalize)
     model = args.wrapper.load(args.model)
-    result = evaluate_all(test, model, normalize)
+    if args.run:
+        result = run_all(test, model, normalize)
+    else: 
+        result = evaluate_all(test, model, normalize)
     json.dump(result, args.out)
 
