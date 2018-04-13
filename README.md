@@ -4,7 +4,7 @@ Lightweight google analogy test evaluation
 Standard usage: 
 
 ```
-> eval-analogy --test path/to/test --wrapper import.path.to.wrapper --model path/to/model
+> eval-analogy agg --test path/to/test --wrapper import.path.to.wrapper --model path/to/model
 ```
 
 Which results in json output like the following: 
@@ -38,3 +38,8 @@ Stockholm Sweden Paris London
 ```
 
 The wrapper class needs to implement a static load function, batched analogy answering, and batched word membership.
+
+To aggregate the results in one coverage/accuracy-score, use the supplied aggregate.jq script like so: 
+```
+jq -sf aggregate.jq agg
+```
