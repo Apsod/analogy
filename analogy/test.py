@@ -1,4 +1,5 @@
 from enum import Enum
+from analogy.util import chunk
 
 
 class Result(Enum):
@@ -7,7 +8,41 @@ class Result(Enum):
     NA = 2
 
 
-def evaluate(examples, model, normalize):
+def run(examples, model, chunksize=200):
+    ret = []
+    ans = []
+    mask = [all(model.members(example)) for example in examples]
+
+    valid_examples = [example for flag, example in zip(mask, examples) if flag]
+
+    for batch in chunk(chunksize, valid_examples):
+        (aa, bb, xx, _) = zip(*batch)
+        abx = zip(aa, bb, xx)
+        ans += model.analogies(abx)
+
+    j = 0
+    for i in range(len(examples)):
+        if mask[i]:
+            ret.append(ans[j])
+            j += 1
+        else:
+            ret.append(None)
+    return ret
+
+
+def run_all(eval_set, model, normalize):
+    ret = {}
+    for category, examples in eval_set.items():
+        pred = run(examples, model)
+        for p, a, b, x, y in zip(pred, *zip(*examples)):
+            ret[category].append({
+                'query': [a, b, x],
+                'correct': y,
+                'prediction': p})
+    return ret
+
+
+def evaluate(examples, model, normalize, chunksize=200):
     """
     Evaluate the model on all analogy examples given.
     :param examples: Analogy examples: [A:B::X:Y]
@@ -15,18 +50,16 @@ def evaluate(examples, model, normalize):
     :param normalize: Normalize query words and return words (i.e. lowercase, or ICU-normalize)
     :return: Aggregate of incorrect, correct, and N/A judgements.
     """
+
+    pred = run(examples, model, chunksize)
+
     ret = {k.name: 0 for k in Result}
-    mask = [all(model.members(example)) for example in examples]
 
-    examples = [example for flag, example in zip(mask, examples) if flag]
-    
-    ret[Result.NA.name] += sum([not m for m in mask])
-
-    if examples:
-        (aa, bb, xx, yy) = zip(*examples)
-        abx = zip(aa, bb, xx)
-        for y, ans in zip(yy, model.analogies(abx)):
-            ret[Result(y == normalize(ans)).name] += 1
+    for p, a, b, x, y in zip(pred, *zip(*examples)):
+        if p is None:
+            ret[Result.NA.name] += 1
+        else:
+            ret[Result(y == normalize(p)).name] += 1
 
     return ret
 
@@ -43,35 +76,3 @@ def evaluate_all(eval_set, model, normalize):
     for category, examples in eval_set.items():
         ret[category] = evaluate(examples, model, normalize)
     return ret
-
-def run(examples, model, normalize):
-    ret = []
-    mask = [all(model.members(example)) for example in examples]
-
-    valid_examples = [example for flag, example in zip(mask, examples) if flag]
-    
-    if valid_examples:
-        (aa, bb, xx, yy) = zip(*valid_examples)
-        abx = zip(aa, bb, xx)
-        ans = model.analogies(abx)
-    j = 0
-    for i in range(len(examples)):
-        if mask[i]:
-            prediction = ans[j]
-            j += 1
-        else: 
-            prediction = 'N/A'
-
-        ret.append({
-            'query': (examples[i][0], examples[i][1], examples[i][2]),
-            'correct': examples[i][3],
-            'prediction': prediction,
-        })
-    return ret
-
-def run_all(eval_set, model, normalize):
-    ret = {}
-    for category, examples in eval_set.items():
-        ret[category] = run(examples, model, normalize)
-    return ret
-

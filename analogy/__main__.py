@@ -3,6 +3,9 @@ import json
 from importlib import import_module
 from analogy.test import evaluate_all, run_all
 from analogy.parse import parse_txt
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 def read_test(arg):
@@ -71,8 +74,11 @@ def __main__():
         def normalize(w):
             return w
 
+    logging.info('Reading test ...')
     test = args.test(normalize)
+    logging.info('Loading model ...')
     model = args.wrapper.load(args.model)
+    logging.info('Running ...')
     if args.run:
         result = run_all(test, model, normalize)
     else: 

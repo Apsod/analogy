@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class Wrapper(ABC):
+class Base(ABC):
     @abstractmethod
     def analogies(self, queries):
         """
