@@ -3,6 +3,10 @@ from abc import ABC, abstractmethod
 
 class Base(ABC):
     @abstractmethod
+    def analogies_index(self, queries):
+        pass
+
+    @abstractmethod
     def analogies(self, queries):
         """
         Analogy query answering method. For efficiency this should handle batched queries of the form

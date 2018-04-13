@@ -1,11 +1,10 @@
 import argparse
 import json
 from importlib import import_module
-from analogy.test import evaluate_all, run_all
+from analogy.test import evaluate_all, run_all, index_all
 from analogy.parse import parse_txt
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
 
 
 def read_test(arg):
@@ -26,15 +25,19 @@ def __main__():
     parser = argparse.ArgumentParser(description='Evaluate a language model against google analogy tasks')
 
     parser.add_argument(
-        '--lower',
-        action='store_true',
-        help='If present, test words are lowercased before being sent to the model',
+        'type',
+        choices=('run', 'agg', 'ix')
     )
 
     parser.add_argument(
-        '--run',
+        '--log',
         action='store_true',
-        help='If present, output all predictions and queries, not just aggregate results',
+    )
+
+    parser.add_argument(
+        '--lower',
+        action='store_true',
+        help='If present, test words are lowercased before being sent to the model',
     )
 
     parser.add_argument(
@@ -67,6 +70,9 @@ def __main__():
 
     args = parser.parse_args()
 
+    if args.log:
+        logging.basicConfig(level=logging.DEBUG)
+
     if args.lower:
         def normalize(w):
             return w.lower()
@@ -79,9 +85,11 @@ def __main__():
     logging.info('Loading model ...')
     model = args.wrapper.load(args.model)
     logging.info('Running ...')
-    if args.run:
+    if args.type == 'run':
         result = run_all(test, model, normalize)
-    else: 
-        result = evaluate_all(test, model, normalize)
+    elif args.type == 'agg':
+        result = evaluate_all(test, model)
+    elif args.type == 'ix':
+        result = index_all(test, model)
     json.dump(result, args.out)
 
